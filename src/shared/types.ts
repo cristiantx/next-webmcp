@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
-export type AnyZodSchema = z.ZodTypeAny;
+export type AnyInputSchema = z.AnyZodObject;
+export type AnyOutputSchema = z.AnyZodObject | undefined;
 
 export interface ToolDefinition<
-  TInputSchema extends AnyZodSchema,
-  TOutputSchema extends AnyZodSchema | undefined = undefined
+  TInputSchema extends AnyInputSchema,
+  TOutputSchema extends AnyOutputSchema = undefined
 > {
   name: string;
   description?: string;
@@ -12,14 +13,14 @@ export interface ToolDefinition<
   outputSchema?: TOutputSchema;
 }
 
-export type InferToolInput<TTool extends ToolDefinition<AnyZodSchema, AnyZodSchema | undefined>> = z.output<
+export type InferToolInput<TTool extends ToolDefinition<AnyInputSchema, AnyOutputSchema>> = z.output<
   TTool['inputSchema']
 >;
 
-export type InferToolOutput<TTool extends ToolDefinition<AnyZodSchema, AnyZodSchema | undefined>> =
-  TTool['outputSchema'] extends AnyZodSchema ? z.output<TTool['outputSchema']> : unknown;
+export type InferToolOutput<TTool extends ToolDefinition<AnyInputSchema, AnyOutputSchema>> =
+  TTool['outputSchema'] extends z.AnyZodObject ? z.output<TTool['outputSchema']> : unknown;
 
-export type ServerToolAction<TTool extends ToolDefinition<AnyZodSchema, AnyZodSchema | undefined>> = (
+export type ServerToolAction<TTool extends ToolDefinition<AnyInputSchema, AnyOutputSchema>> = (
   input: z.input<TTool['inputSchema']>
 ) => Promise<InferToolOutput<TTool>>;
 

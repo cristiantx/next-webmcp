@@ -13,8 +13,8 @@ export interface CreateToolActionOptions<TContext> {
 }
 
 export function createToolAction<
-  TInputSchema extends z.ZodTypeAny,
-  TOutputSchema extends z.ZodTypeAny | undefined = undefined,
+  TInputSchema extends z.AnyZodObject,
+  TOutputSchema extends z.AnyZodObject | undefined = undefined,
   TContext = unknown
 >(
   tool: ToolDefinition<TInputSchema, TOutputSchema>,
