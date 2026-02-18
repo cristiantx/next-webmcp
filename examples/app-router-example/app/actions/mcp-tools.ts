@@ -1,6 +1,6 @@
 'use server';
 
-import { createToolAction, createToolContext } from 'next-webmcp/server';
+import { createToolContext, executeTool, type InferToolActionInput } from 'next-webmcp/server';
 
 import { auth } from '../../lib/auth';
 import { createTaskTool } from '../tools/definitions';
@@ -17,9 +17,11 @@ const getContext = createToolContext({
   })
 });
 
-export const createTaskAction = createToolAction(
-  createTaskTool,
-  async ({ title, priority }, context) => {
+export async function createTaskAction(input: InferToolActionInput<typeof createTaskTool>) {
+  return executeTool(
+    createTaskTool,
+    input,
+    async ({ title, priority }, context) => {
     const fakeId = `${context.auth?.userId ?? 'anonymous'}-${Date.now()}`;
 
     // Replace this with real DB persistence.
@@ -27,6 +29,7 @@ export const createTaskAction = createToolAction(
       id: `${fakeId}:${title}:${priority}`,
       success: true
     };
-  },
-  { getContext }
-);
+    },
+    { getContext }
+  );
+}

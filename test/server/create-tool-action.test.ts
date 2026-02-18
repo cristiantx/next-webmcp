@@ -3,10 +3,44 @@ import { describe, expect, it } from 'vitest';
 
 import { ToolExecutionError } from '../../src/shared/errors.js';
 import { createToolContext } from '../../src/server/context.js';
-import { createToolAction } from '../../src/server/create-tool-action.js';
+import { createToolAction, executeTool } from '../../src/server/create-tool-action.js';
 import { defineTool } from '../../src/server/define-tool.js';
 
-describe('createToolAction', () => {
+describe('server tool execution', () => {
+  it('supports top-level action execution via executeTool', async () => {
+    const createTaskTool = defineTool({
+      name: 'create_task',
+      inputSchema: z.object({
+        title: z.string(),
+        priority: z.enum(['low', 'medium', 'high']).default('medium')
+      }),
+      outputSchema: z.object({
+        id: z.string(),
+        success: z.boolean()
+      })
+    });
+
+    const getContext = createToolContext({
+      getAuth: () => ({ userId: 'u1' }),
+      createRequestId: () => 'req_1'
+    });
+
+    const result = await executeTool(
+      createTaskTool,
+      { title: 'ship', priority: 'high' },
+      async ({ title, priority }, context) => ({
+        id: `${context.auth?.userId}:${title}:${priority}`,
+        success: true
+      }),
+      { getContext }
+    );
+
+    expect(result).toEqual({
+      id: 'u1:ship:high',
+      success: true
+    });
+  });
+
   it('validates input and returns typed output', async () => {
     const addTool = defineTool({
       name: 'add_numbers',

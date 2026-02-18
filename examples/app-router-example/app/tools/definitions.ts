@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { defineTool } from 'next-webmcp/server';
 
-export const createTaskTool = {
+export const createTaskTool = defineTool({
   name: 'create_task',
   description: 'Create a task in a persistent store',
   inputSchema: z.object({
@@ -11,4 +12,4 @@ export const createTaskTool = {
     id: z.string(),
     success: z.boolean()
   })
-};
+});
