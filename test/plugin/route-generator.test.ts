@@ -57,13 +57,17 @@ describe('route generator', () => {
       }
     );
 
+    expect(typeof config.webpack).toBe('function');
+
+    // Routes are generated during webpack compilation, not at config load time
+    expect(existsSync(outFile)).toBe(false);
+
+    const nextConfigResult = config.webpack?.({ mode: 'development' }, {});
+    expect(nextConfigResult).toEqual({ mode: 'development' });
+
     expect(existsSync(outFile)).toBe(true);
 
     const generatedContent = readFileSync(outFile, 'utf8');
     expect(generatedContent).toContain('/app/dashboard/[id]');
-    expect(typeof config.webpack).toBe('function');
-
-    const nextConfigResult = config.webpack?.({ mode: 'development' }, {});
-    expect(nextConfigResult).toEqual({ mode: 'development' });
   });
 });

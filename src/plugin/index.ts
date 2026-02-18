@@ -35,11 +35,6 @@ function resolveRouteOptions(options: WebMCPRoutesPluginOptions = {}): GenerateW
 
 export function withWebMCP(nextConfig: NextConfigLike = {}, options: WebMCPPluginOptions = {}): NextConfigLike {
   const routeOptions = options.routes;
-
-  if (routeOptions?.enabled) {
-    generateWebMCPRoutes(resolveRouteOptions(routeOptions));
-  }
-
   const originalWebpack = nextConfig.webpack;
 
   return {

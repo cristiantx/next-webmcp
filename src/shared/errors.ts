@@ -12,15 +12,12 @@ export interface ToolErrorShape {
  */
 export class ToolExecutionError extends Error {
   readonly code: ToolErrorCode;
-  readonly cause?: unknown;
 
   constructor({ code, message, cause }: ToolErrorShape) {
-    super(message);
+    super(message, { cause });
     this.name = 'ToolExecutionError';
     this.code = code;
-    this.cause = cause;
 
-    // Preserve the original stack trace if cause is an Error
     if (cause instanceof Error && cause.stack) {
       this.stack = `${this.stack}\nCaused by: ${cause.stack}`;
     }
