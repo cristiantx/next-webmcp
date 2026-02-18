@@ -19,6 +19,24 @@ export interface UseServerToolOptions<TTool extends ToolDefinition<z.AnyZodObjec
   onError?: (error: ToolExecutionError, input: z.input<TTool['inputSchema']>) => void;
 }
 
+/**
+ * Hook that registers a server action as a WebMCP tool.
+ *
+ * @example
+ * ```tsx
+ * 'use client';
+ * import { useServerTool } from 'next-webmcp';
+ *
+ * export function MyTools() {
+ *   useServerTool(createTaskTool, createTaskAction);
+ *   return null;
+ * }
+ * ```
+ *
+ * @param tool - The tool definition with schemas
+ * @param action - The Server Action created by createToolAction
+ * @param options - Optional configuration for enabled state, callbacks, and dependencies
+ */
 export function useServerTool<TTool extends ToolDefinition<z.AnyZodObject, z.AnyZodObject | undefined>>(
   tool: TTool,
   action: ServerToolAction<TTool>,

@@ -39,9 +39,17 @@ const searchParamsOutputSchema = {
   searchParams: z.record(z.union([z.string(), z.array(z.string())]))
 };
 
+/**
+ * Hook that registers a tool to get current URL pathname and search params.
+ * @param options - Configuration options for the tool
+ * @returns The WebMCP tool registration result
+ */
 export function useSearchParamsTool({ name, description }: UseSearchParamsToolOptions = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Memoize search params string to maintain referential equality
+  const searchParamsString = searchParams.toString();
 
   return useWebMCP(
     {
@@ -50,17 +58,16 @@ export function useSearchParamsTool({ name, description }: UseSearchParamsToolOp
       inputSchema: {},
       outputSchema: searchParamsOutputSchema,
       handler: async () => {
-        const queryString = searchParams.toString();
-        const normalizedParams = toSearchParamsObject(new URLSearchParams(queryString));
+        const normalizedParams = toSearchParamsObject(new URLSearchParams(searchParamsString));
 
         return {
           pathname,
-          href: queryString ? `${pathname}?${queryString}` : pathname,
+          href: searchParamsString ? `${pathname}?${searchParamsString}` : pathname,
           searchParams: normalizedParams
         };
       }
     },
-    [pathname, searchParams.toString()]
+    [pathname, searchParamsString]
   );
 }
 
