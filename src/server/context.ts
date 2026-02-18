@@ -8,6 +8,21 @@ export interface CreateToolContextOptions<TAuth = unknown> {
   createRequestId?: () => string;
 }
 
+/**
+ * Creates a context factory for tool handlers with auth, metadata, and request tracking.
+ *
+ * @example
+ * ```ts
+ * const getContext = createToolContext({
+ *   getAuth: async () => ({ userId: '123' }),
+ *   getMetadata: async () => ({ source: 'api' }),
+ *   createRequestId: () => 'req-123'
+ * });
+ * ```
+ *
+ * @param options - Configuration for auth, metadata, and request ID generation
+ * @returns A factory function that creates context objects
+ */
 export function createToolContext<TAuth = unknown>(
   options: CreateToolContextOptions<TAuth> = {}
 ): ToolContextFactory<ToolHandlerContext<TAuth>> {

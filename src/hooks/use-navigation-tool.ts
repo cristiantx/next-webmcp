@@ -2,7 +2,7 @@
 
 import { useWebMCP } from '@mcp-b/react-webmcp';
 import { useRouter } from 'next/navigation';
-import { type DependencyList } from 'react';
+import { type DependencyList, useMemo } from 'react';
 import { z } from 'zod';
 
 import { normalizeToolError } from '../shared/errors.js';
@@ -43,12 +43,22 @@ const navigationOutputSchema = {
   href: z.string()
 };
 
+/**
+ * Hook that registers a navigation tool for App Router navigation.
+ * @param options - Configuration options including routes and tool metadata
+ * @returns The WebMCP tool registration result
+ */
 export function useNavigationTool({ routes, name, description, deps }: UseNavigationToolOptions) {
   const router = useRouter();
 
-  const routeHelpText = routes
-    .map((route) => `${route.path}${route.description ? ` (${route.description})` : ''}`)
-    .join(', ');
+  // Memoize route help text to avoid recalculation on every render
+  const routeHelpText = useMemo(
+    () =>
+      routes
+        .map((route) => `${route.path}${route.description ? ` (${route.description})` : ''}`)
+        .join(', '),
+    [routes]
+  );
 
   return useWebMCP(
     {

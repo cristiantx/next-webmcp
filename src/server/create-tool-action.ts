@@ -12,6 +12,26 @@ export interface CreateToolActionOptions<TContext> {
   getContext?: ToolContextFactory<TContext>;
 }
 
+/**
+ * Creates a Server Action that validates input/output using Zod schemas.
+ *
+ * @example
+ * ```ts
+ * const action = createToolAction(
+ *   myTool,
+ *   async (input, context) => {
+ *     // Handler implementation
+ *     return { success: true };
+ *   },
+ *   { getContext: () => ({ userId: '123' }) }
+ * );
+ * ```
+ *
+ * @param tool - The tool definition with input/output schemas
+ * @param handler - Async function to process validated input
+ * @param options - Optional context factory
+ * @returns A Server Action function
+ */
 export function createToolAction<
   TInputSchema extends z.AnyZodObject,
   TOutputSchema extends z.AnyZodObject | undefined = undefined,
