@@ -17,6 +17,10 @@ export type InferToolInput<TTool extends ToolDefinition<AnyInputSchema, AnyOutpu
   TTool['inputSchema']
 >;
 
+export type InferToolActionInput<TTool extends ToolDefinition<AnyInputSchema, AnyOutputSchema>> = z.input<
+  TTool['inputSchema']
+>;
+
 export type InferToolOutput<TTool extends ToolDefinition<AnyInputSchema, AnyOutputSchema>> =
   TTool['outputSchema'] extends z.AnyZodObject ? z.output<TTool['outputSchema']> : unknown;
 
