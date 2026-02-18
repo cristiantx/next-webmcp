@@ -2,7 +2,7 @@
 
 import { useWebMCP } from '@mcp-b/react-webmcp';
 import { useRouter } from 'next/navigation';
-import { type DependencyList, useMemo } from 'react';
+import { type DependencyList, useCallback, useMemo, useRef } from 'react';
 import { z } from 'zod';
 
 import { normalizeToolError } from '../shared/errors.js';
@@ -51,13 +51,54 @@ const navigationOutputSchema = {
 export function useNavigationTool({ routes, name, description, deps }: UseNavigationToolOptions) {
   const router = useRouter();
 
-  // Memoize route help text to avoid recalculation on every render
   const routeHelpText = useMemo(
     () =>
       routes
         .map((route) => `${route.path}${route.description ? ` (${route.description})` : ''}`)
         .join(', '),
     [routes]
+  );
+
+  const routesRef = useRef(routes);
+  routesRef.current = routes;
+
+  const routerRef = useRef(router);
+  routerRef.current = router;
+
+  const handler = useCallback(
+    async (input: { route: string; params?: Record<string, string | number | boolean> | undefined; replace?: boolean | undefined }) => {
+      const { route, params, replace } = input;
+      const currentRoutes = routesRef.current;
+      const currentRouter = routerRef.current;
+
+      const routeConfig = currentRoutes.find((item: NavigationRoute) => item.path === route);
+
+      if (!routeConfig) {
+        throw normalizeToolError(
+          new Error(`Route "${route}" is not registered in useNavigationTool.`),
+          'INVALID_INPUT',
+          'Invalid route.'
+        );
+      }
+
+      if (routeConfig.params) {
+        routeConfig.params.parse(params ?? {});
+      }
+
+      const href = interpolateRoutePath(route, params);
+
+      if (replace) {
+        currentRouter.replace(href);
+      } else {
+        currentRouter.push(href);
+      }
+
+      return {
+        success: true,
+        href
+      };
+    },
+    []
   );
 
   return useWebMCP(
@@ -68,34 +109,7 @@ export function useNavigationTool({ routes, name, description, deps }: UseNaviga
         `Navigate the user to one of the supported routes. Available routes: ${routeHelpText}`,
       inputSchema: navigationInputSchema,
       outputSchema: navigationOutputSchema,
-      handler: async ({ route, params, replace }) => {
-        const routeConfig = routes.find((item) => item.path === route);
-
-        if (!routeConfig) {
-          throw normalizeToolError(
-            new Error(`Route "${route}" is not registered in useNavigationTool.`),
-            'INVALID_INPUT',
-            'Invalid route.'
-          );
-        }
-
-        if (routeConfig.params) {
-          routeConfig.params.parse(params ?? {});
-        }
-
-        const href = interpolateRoutePath(route, params);
-
-        if (replace) {
-          router.replace(href);
-        } else {
-          router.push(href);
-        }
-
-        return {
-          success: true,
-          href
-        };
-      }
+      handler
     },
     deps
   );

@@ -14,6 +14,7 @@ import {
 
 const PROVIDER_STATE_KEY = '__nextWebMcpProviderState';
 const ProviderNestingContext = createContext(false);
+ProviderNestingContext.displayName = 'WebMCPProviderNesting';
 
 interface ProviderGlobalState {
   providerCount: number;
@@ -70,30 +71,34 @@ export function WebMCPProviderClient({
   const providerInstanceIdRef = useRef(`provider-${Math.random().toString(36).slice(2)}`);
   const shouldRenderAgent = agent !== false && (agent?.enabled ?? true);
 
+  const agentComponent = agent !== false ? agent?.component : undefined;
+  const agentLoader = agent !== false ? agent?.loader : undefined;
+
   const AgentComponent = useMemo(() => {
     if (agent === false) {
       return null;
     }
 
-    if (agent?.component) {
-      return agent.component;
+    if (agentComponent) {
+      return agentComponent;
     }
 
-    if (agent?.loader) {
-      return dynamic(agent.loader, { ssr: false });
+    if (agentLoader) {
+      return dynamic(agentLoader, { ssr: false });
     }
 
     return null;
-  }, [agent]);
+  }, [agent === false, agentComponent, agentLoader]);
 
   useEffect(() => {
     const globalState = getGlobalState();
+    const instanceId = providerInstanceIdRef.current;
     globalState.providerCount += 1;
 
-    const isTopLevelOwner = !parentProviderExists && globalState.ownerId === null;
-
-    if (isTopLevelOwner) {
-      globalState.ownerId = providerInstanceIdRef.current;
+    // Claim ownership atomically: only one provider can own at a time.
+    // compareAndSet pattern prevents race in React Strict Mode double-mount.
+    if (!parentProviderExists && globalState.ownerId === null) {
+      globalState.ownerId = instanceId;
       setIsPrimaryProvider(true);
     } else {
       setIsPrimaryProvider(false);
@@ -106,11 +111,10 @@ export function WebMCPProviderClient({
     }
 
     return () => {
-      const cleanupState = getGlobalState();
-      cleanupState.providerCount = Math.max(0, cleanupState.providerCount - 1);
+      globalState.providerCount = Math.max(0, globalState.providerCount - 1);
 
-      if (cleanupState.ownerId === providerInstanceIdRef.current) {
-        cleanupState.ownerId = null;
+      if (globalState.ownerId === instanceId) {
+        globalState.ownerId = null;
       }
     };
   }, [parentProviderExists]);
