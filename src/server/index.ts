@@ -1,7 +1,13 @@
 export { createToolContext, type CreateToolContextOptions } from './context.js';
-export { createToolAction, type CreateToolActionOptions } from './create-tool-action.js';
+export {
+  createToolAction,
+  executeTool,
+  type CreateToolActionOptions,
+  type ExecuteToolOptions
+} from './create-tool-action.js';
 export { defineTool } from './define-tool.js';
 export type {
+  InferToolActionInput,
   InferToolInput,
   InferToolOutput,
   ServerToolAction,

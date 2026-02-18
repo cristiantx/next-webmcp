@@ -76,7 +76,7 @@ export const createTaskTool = defineTool({
 // app/actions/mcp-tools.ts
 'use server';
 
-import { createToolAction, createToolContext } from 'next-webmcp/server';
+import { createToolContext, executeTool, type InferToolActionInput } from 'next-webmcp/server';
 import { createTaskTool } from '../tools/definitions';
 
 const getContext = createToolContext({
@@ -84,16 +84,19 @@ const getContext = createToolContext({
   getMetadata: async () => ({ source: 'app-router-example' })
 });
 
-export const createTaskAction = createToolAction(
-  createTaskTool,
-  async ({ title, priority }, context) => {
-    const id = `${context.auth?.userId ?? 'anon'}:${title}`;
+export async function createTaskAction(input: InferToolActionInput<typeof createTaskTool>) {
+  return executeTool(
+    createTaskTool,
+    input,
+    async ({ title, priority }, context) => {
+      const id = `${context.auth?.userId ?? 'anon'}:${title}`;
 
-    // Replace with your DB write.
-    return { id: `${id}:${priority}`, success: true };
-  },
-  { getContext }
-);
+      // Replace with your DB write.
+      return { id: `${id}:${priority}`, success: true };
+    },
+    { getContext }
+  );
+}
 ```
 
 ### 4. Register in a client component
@@ -144,12 +147,14 @@ defineTool({
 })
 ```
 
-### `createToolAction`
+### `executeTool` (recommended)
 
 ```ts
-createToolAction(tool, handler, {
-  getContext: async () => ({ ... })
-})
+export async function action(input: InferToolActionInput<typeof tool>) {
+  return executeTool(tool, input, handler, {
+    getContext: async () => ({ ... })
+  });
+}
 ```
 
 - Validates input with `tool.inputSchema`
@@ -159,6 +164,10 @@ createToolAction(tool, handler, {
   - `INVALID_INPUT`
   - `HANDLER_ERROR`
   - `INVALID_OUTPUT`
+
+### `createToolAction` (compatibility helper)
+
+`createToolAction` is still available, but in Next.js App Router the top-level exported server action pattern with `executeTool` is safer.
 
 ### `useServerTool`
 

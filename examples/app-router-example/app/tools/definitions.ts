@@ -1,5 +1,4 @@
 import { z } from 'zod';
-
 import { defineTool } from 'next-webmcp/server';
 
 export const createTaskTool = defineTool({
