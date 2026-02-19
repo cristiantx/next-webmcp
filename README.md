@@ -1,36 +1,47 @@
 # next-webmcp
 
-`next-webmcp` is a Next.js App Router-first bridge for WebMCP.
+Build WebMCP-powered Next.js App Router apps without fighting server/client boundaries.
 
-It wraps `@mcp-b/react-webmcp` with server-safe provider wiring, a typed Server Action bridge, navigation/search helpers, and an experimental route codegen plugin.
+`next-webmcp` wraps `@mcp-b/react-webmcp` with server-safe provider wiring, typed Server Action integration, navigation/search helpers, and an optional route metadata generator.
 
-## Features
+## Project Status
+
+`next-webmcp` is experimental software and has not been proven in production environments yet. Expect breaking changes while the API and patterns mature.
+
+## Why This Package
+
+WebMCP + Next.js App Router can be awkward when tools span server actions, client hooks, and provider setup. This package gives you one consistent pattern for:
+
+- registering tools in client components
+- executing them safely in server actions
+- keeping input/output validation in one shared contract
+- exposing navigation and query helpers to MCP callers
+
+## Highlights
 
 - Server-safe `WebMCPProvider` for App Router layouts
 - Automatic browser polyfill loading (`@mcp-b/global`) on the client
 - Nested provider deduplication to avoid duplicate embedded agents
-- Typed tool definition + Server Action execution (`defineTool` + `createToolAction`)
-- App Router hooks:
-  - `useServerTool`
-  - `useNavigationTool`
-  - `useSearchParamsTool`
+- Typed tool contracts + validated execution (`defineTool` + `executeTool`)
+- App Router hooks: `useServerTool`, `useNavigationTool`, `useSearchParamsTool`
 - Experimental route generator plugin (`withWebMCP`)
 
-## Installation
+## Requirements
+
+- `node >= 20`
+- `next >= 15`
+- `react >= 18.3`
+- `react-dom >= 18.3`
+
+## Install
 
 ```bash
 npm install next-webmcp @mcp-b/react-webmcp zod
 ```
 
-Peer requirements:
-
-- `next >= 15`
-- `react >= 18.3`
-- `react-dom >= 18.3`
-
 ## Quick Start
 
-### 1. Add provider in a server layout
+### 1. Add the provider in a server layout
 
 ```tsx
 // app/layout.tsx
@@ -49,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 No `'use client'` directive is required in the layout.
 
-### 2. Define a shared tool contract
+### 2. Define a shared tool contract (single source of truth)
 
 ```ts
 // app/tools/definitions.ts
@@ -70,7 +81,7 @@ export const createTaskTool = defineTool({
 });
 ```
 
-### 3. Bind handler in a Server Action file
+### 3. Bind a validated handler in a Server Action file
 
 ```ts
 // app/actions/mcp-tools.ts
@@ -99,7 +110,7 @@ export async function createTaskAction(input: InferToolActionInput<typeof create
 }
 ```
 
-### 4. Register in a client component
+### 4. Register the tool in a client component
 
 ```tsx
 'use client';
@@ -114,7 +125,11 @@ export function TaskTools() {
 }
 ```
 
-## API
+Flow:
+
+`defineTool` -> `useServerTool` -> Server Action -> `executeTool` -> validated result
+
+## API Reference
 
 ### `WebMCPProvider`
 
@@ -229,7 +244,7 @@ The generated file exports:
 
 ## Example App
 
-See `/examples/app-router-example` for a complete flow with:
+See `examples/app-router-example` for a complete flow with:
 
 - root provider
 - shared tool definitions
@@ -243,3 +258,16 @@ See `/examples/app-router-example` for a complete flow with:
 - Missing `navigator.modelContext`: keep `injectPolyfill` enabled or manually load `@mcp-b/global`.
 - Hook in server component error: move `useServerTool`, `useNavigationTool`, and `useSearchParamsTool` to client components.
 - Server Action import issues: export actions from `'use server'` files and import them into client components directly.
+
+## Contributing
+
+Contributions and suggestions are welcome.
+
+- Open an issue for bugs, questions, ideas, or API feedback.
+- Open a pull request for fixes, docs, tests, or new helpers.
+- For behavior changes, include tests or a minimal reproduction.
+- Keep PRs focused and include a short rationale in the description.
+
+## License
+
+MIT
