@@ -2,6 +2,14 @@
   "name": "next-webmcp",
   "version": "0.1.0",
   "description": "A tiny set of Next.js (App Router) helpers for WebMCP",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cristiantx/next-webmcp.git"
+  },
+  "homepage": "https://github.com/cristiantx/next-webmcp#readme",
+  "bugs": {
+    "url": "https://github.com/cristiantx/next-webmcp/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,8 +28,11 @@
     }
   },
   "files": [
-    "dist",
-    "README.md"
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "scripts": {
@@ -29,7 +40,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prepublishOnly": "npm run clean && npm run check"
   },
   "keywords": [
     "nextjs",
@@ -38,6 +51,9 @@
     "app-router"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
