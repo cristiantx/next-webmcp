@@ -13,5 +13,5 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   treeshake: true,
-  external: ['react', 'react-dom', 'next', '@mcp-b/react-webmcp']
+  external: ['react', 'react-dom', 'next', '@mcp-b/react-webmcp', '@mcp-b/global', 'zod']
 });
